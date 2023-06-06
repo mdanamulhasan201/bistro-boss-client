@@ -1,28 +1,41 @@
 import { useContext } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../../Providers/AuthProvider";
+import { FaShoppingCart } from 'react-icons/fa';
+import useCart from "../../../hooks/useCart";
 
 const Navbar = () => {
     const { user, logOut } = useContext(AuthContext);
+    const [cart] = useCart()
     const handleLogOut = () => {
         logOut()
             .then(() => { })
             .catch(error => console.log(error))
     }
 
+
+
     const navOptions = <>
         <li><Link to='/'>OUR MENU</Link></li>
-        <li><Link to='/contact'>CONTACT US</Link></li>
-        <li><a>DASHBOARD</a></li>
+        <li><Link to='contact'>CONTACT US</Link></li>
+        <li><Link to='/'>DASHBOARD</Link></li>
         <li><Link to='/menu'>OUR MENU</Link></li>
         <li><Link to='/order/salad'>OUR SHOP</Link></li>
         <li><Link to='secret'>SECRET</Link></li>
+        <li>
+            <Link to='/deshboard/mycart'>
+                <button className="btn gap-2">
+                    <FaShoppingCart className="text-2xl"></FaShoppingCart>
+                    <div className="badge badge-secondary">+{cart?.length || 0}</div>
+                </button>
+            </Link>
+        </li>
 
         {
             user ?
                 <>
-                <span>{user?.displayName}</span>
-                    <li onClick={handleLogOut}  className="items-center mr-2 cursor-pointer">LOGOUT</li>
+                    <span>{user?.displayName}</span>
+                    <li onClick={handleLogOut} className="items-center mr-2 cursor-pointer">LOGOUT</li>
                 </> :
                 <>
                     <li className="items-center mr-2"><Link to='/login'>LOGIN</Link></li>
@@ -53,7 +66,7 @@ const Navbar = () => {
                     {navOptions}
                 </ul>
             </div>
-          
+
         </div>
     );
 };

@@ -1,37 +1,54 @@
 import { Helmet } from "react-helmet-async";
 import img from '../../assets/others/authentication2.png'
-import { Link, useNavigate } from "react-router-dom";
+import { Link, json, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useContext } from "react";
 import { AuthContext } from "../../Providers/AuthProvider";
 import Swal from "sweetalert2";
+import { FaGoogle } from "react-icons/fa";
+import SocialLogin from "../Shared/SocialLogin/SocialLogin";
 
 
 
 const SignUp = () => {
 
     const { createUser, updateUserProfile } = useContext(AuthContext)
-    const { register, handleSubmit, formState: { errors }, setValue } = useForm();
+    const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm();
     const navigate = useNavigate();
 
     const onSubmit = data => {
-        console.log(data)
+
         resetFields();
         createUser(data.email, data.password)
             .then(result => {
                 const loggedUser = result.user
                 console.log(loggedUser)
+                // user name photo
                 updateUserProfile(data.name, data.photoURL)
                     .then(() => {
-                        console.log('user profile info updated ')
-                        Swal.fire({
-                            position: 'top-end',
-                            icon: 'success',
-                            title: 'User created successfully',
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
-                        navigate('/')
+                        const saveUser = { name: data.name, email: data.email }
+                        fetch('http://localhost:5000/users', {
+                            method: "POST",
+                            headers: {
+                                'content-type': 'application/json'
+                            },
+                            body: JSON.stringify(saveUser)
+                        })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.insertedId) {
+                                    reset()
+                                    Swal.fire({
+                                        position: 'top-end',
+                                        icon: 'success',
+                                        title: 'User created successfully',
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    });
+                                    navigate('/')
+                                }
+                            })
+
                     })
                     .catch(error => console.log(error))
             })
@@ -60,7 +77,7 @@ const SignUp = () => {
                                 <label className="label">
                                     <span className="label-text">Name</span>
                                 </label>
-                                <input type="text" {...register("name", { required: true, pattern: /[A-Za-z]+$/ })} name="name" placeholder="Name" className="input input-bordered border-[#BB8506]" />
+                                <input type="text" {...register("name", { required: true, pattern: /[A-Za-z,.]+$/ })} name="name" placeholder="Name" className="input input-bordered border-[#BB8506]" />
 
                                 {errors.name?.type === 'pattern' && <p className="text-red-600 mt-2" role="alert">Type Letters Only</p>}
                                 {errors.name?.type === 'required' && <p className="text-red-600 mt-2" role="alert">Name is required</p>}
@@ -113,13 +130,18 @@ const SignUp = () => {
                             </div>
                         </form>
                         <p className='text-center'><small>Already registered? <Link to='/login'> <span className='text-[#BB8506] font-bold'>Go to log in</span> </Link> </small></p>
+                       <div className="text-center">
+                        <SocialLogin></SocialLogin>
+                       </div>
                     </div>
                     <div className="text-center lg:text-left">
 
                         <img src={img} alt="" />
                     </div>
                 </div>
+                
             </div>
+           
         </div>
     );
 };
